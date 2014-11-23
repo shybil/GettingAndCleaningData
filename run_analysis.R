@@ -34,37 +34,33 @@ dsStep1 <- rbind(X_train, X_test)
 ##########################################
 #
 selected_features <- features[grepl("Mean\\(\\)", features$featureLabel) | grepl("Std\\(\\)", features$featureLabel), ] 
-
-dsStep2 <- dsStep1[,c(selected_features$featureId,c(562:564))] 
+dsStep1 <- dsStep1[,c(selected_features$featureId,c(562:564))] 
 #
-##########################################  
-# 3. Use descriptive activity names to 
-#    name the activities in the data set.
 ########################################## 
-#
-dsStep3 = merge( dsStep2,activity_labels,by="activityId") 
-########################################## 
-# 4. Appropriately label the data set 
+# 3. Appropriately label the data set 
 #    with descriptive activity names.
 ########################################## 
 selected_features$featureLabel = gsub("\\(\\)", "", selected_features$featureLabel) 
 selected_features$featureLabel = gsub("-", ".", selected_features$featureLabel) 
 
-
 for (i in 1:length(selected_features$featureLabel)) { 
-        colnames(dsStep3)[i + 1] <- selected_features$featureLabel[i] 
+        colnames(dsStep1)[i] <- selected_features$featureLabel[i] 
 } 
-dsStep4 = dsStep3 
-
 ##########################################  
-# 5. From the data set in step 4, creates an independent tidy data set 
+# 4. From the data set in step 4, creates an independent tidy data set 
 #    with the average of each variable for each activity and each subject.
 ########################################## 
-removal <- c("ID","activityLabel") 
-dsStep5 <- dsStep4[,!(names(dsStep4) %in% removal)] 
-tidydata <-aggregate(dsStep5, by=list(subject = dsStep5$subjectId, activity = dsStep5$activityId), FUN=mean, na.rm=TRUE) 
+removal <- c("ID")
+dsStep1 <- dsStep1[,!(names(dsStep1) %in% removal)] 
+tidydata <-aggregate(dsStep1, by=list(subject = dsStep1$subjectId, activity = dsStep1$activityId), FUN=mean, na.rm=TRUE) 
 removal <- c("subject","activity") 
-tidydata <- tidydata[,!(names(tidydata) %in% removal)] 
+tidydata <- tidydata[,!(names(tidydata) %in% removal)]
+#
+##########################################  
+# 5. Use descriptive activity names to 
+#    name the activities in the data set.
+########################################## 
+#
 tidydata = merge(tidydata, activity_labels) 
 #
 write.table(tidydata,"projectTidy.txt", row.name=FALSE, sep="\t")
