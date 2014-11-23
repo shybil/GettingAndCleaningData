@@ -49,11 +49,12 @@ Assign the activity label with the activity id associated with the row
 # 4. Appropriately label the data set with descriptive activity names.
 
 Remove () Replace - with . from the features
-Skip the first 3 columns and replace the column names from V... to the Features label
+Replace the column names from V... to the Features label
 
 # 5. From the data set in step 4, creates an independent tidy data set with the average of each variable for each activity and each subject.
 
 Remove extra columns
+Perform the aggregation by subject and activity and save the results into tidydata
 Add in the activity label
-use the write.table to create the resulting projectTidy.txt tidy file
+Use the write.table to create the resulting projectTidy.txt tidy file
 
