@@ -3,61 +3,58 @@
 #    test sets to create one data set.
 ########################################## 
 # read training data
-subject_train = read.table("UCI HAR Dataset/train/subject_train.txt", col.names=c("subjectId")) 
-X_train = read.table("UCI HAR Dataset/train/X_train.txt") 
-y_train = read.table("UCI HAR Dataset/train/y_train.txt", col.names=c("activityId"))  
+X_train = read.csv("UCI HAR Dataset/train/X_train.txt", sep="", header=FALSE) 
+X_train[,562] = read.csv("UCI HAR Dataset/train/Y_train.txt", sep="", header=FALSE, col.names=c("activityId")) 
+X_train[,563] = read.csv("UCI HAR Dataset/train/subject_train.txt", sep="", header=FALSE, col.names=c("subjectId")) 
+
 # read test data 
-subject_test = read.table("UCI HAR Dataset/test/subject_test.txt", col.names=c("subjectId")) 
-X_test = read.table("UCI HAR Dataset/test/X_test.txt") 
-y_test = read.table("UCI HAR Dataset/test/y_test.txt", col.names=c("activityId"))
-# read features
-features = read.table("UCI HAR Dataset/features.txt", col.names=c("featureId", "featureLabel"),)  
+X_test = read.csv("UCI HAR Dataset/test/X_test.txt", sep="", header=FALSE) 
+X_test[,562] = read.csv("UCI HAR Dataset/test/Y_test.txt", sep="", header=FALSE, col.names=c("activityId")) 
+X_test[,563] = read.csv("UCI HAR Dataset/test/subject_test.txt", sep="", header=FALSE, col.names=c("subjectId")) 
+
+# read features and standardize the two feature names 
+features = read.table("UCI HAR Dataset/features.txt", col.names=c("featureId", "featureLabel"),)
+features$featureLabel = gsub('-mean', '-Mean', features$featureLabel) 
+features$featureLabel = gsub('-std', '-Std', features$featureLabel) 
+
 # read activity
 activity_labels = read.table("UCI HAR Dataset/activity_labels.txt", col.names=c("activityId", "activityLabel"),) 
 #
 # assign row numbers as the values of ID column 
-subject_train$ID <- as.numeric(rownames(subject_train)) 
 X_train$ID <- as.numeric(rownames(X_train)) 
-y_train$ID <- as.numeric(rownames(y_train)) 
-subject_test$ID <- as.numeric(rownames(subject_test)) 
 X_test$ID <- as.numeric(rownames(X_test)) 
-y_test$ID <- as.numeric(rownames(y_test)) 
 #
-# merge train   
-trainMerge <- merge(subject_train, y_train, all=TRUE) 
-trainMerge <- merge(trainMerge, X_train, all=TRUE) 
-#
-# merge test   
-testMerge <- merge(subject_test, y_test, all=TRUE)  
-testMerge <- merge(testMerge, X_test, all=TRUE)  
 #   
 # End result combine train and test 
-dsStep1 <- rbind(trainMerge, testMerge) 
+dsStep1 <- rbind(X_train, X_test) 
 #
 ########################################## 
 # 2. Extract only the measurements on the 
 #    mean and standard deviation for each measurement.
 ##########################################
 #
-selected_features <- features[grepl("mean\\(\\)", features$featureLabel) | grepl("std\\(\\)", features$featureLabel), ] 
-dsStep2 <- dsStep1[, c(c(1, 2, 3), selected_features$featureId + 3) ] 
+selected_features <- features[grepl("Mean\\(\\)", features$featureLabel) | grepl("Std\\(\\)", features$featureLabel), ] 
+
+dsStep2 <- dsStep1[,c(selected_features$featureId,c(562:564))] 
 #
 ##########################################  
 # 3. Use descriptive activity names to 
 #    name the activities in the data set.
 ########################################## 
 #
-dsStep3 = merge(dsStep2, activity_labels) 
+dsStep3 = merge( dsStep2,activity_labels,by="activityId") 
 ########################################## 
 # 4. Appropriately label the data set 
 #    with descriptive activity names.
 ########################################## 
 selected_features$featureLabel = gsub("\\(\\)", "", selected_features$featureLabel) 
 selected_features$featureLabel = gsub("-", ".", selected_features$featureLabel) 
+
+
 for (i in 1:length(selected_features$featureLabel)) { 
-     colnames(dsStep3)[i + 3] <- selected_features$featureLabel[i] 
- } 
- dsStep4 = dsStep3 
+        colnames(dsStep3)[i + 1] <- selected_features$featureLabel[i] 
+} 
+dsStep4 = dsStep3 
 
 ##########################################  
 # 5. From the data set in step 4, creates an independent tidy data set 
